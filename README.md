@@ -2,6 +2,8 @@
 
 Streamlit app for local transcription, speaker diarization, thumbnails, and optional face overlays on uploaded audio or video.
 
+![preview of the streamlit application](https://raw.githubusercontent.com/jakob1379/who-speaks/refs/heads/main/preview.png)
+
 ## What it does
 
 - local audio/video upload

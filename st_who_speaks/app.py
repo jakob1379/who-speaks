@@ -362,13 +362,7 @@ def render_result(result: ProcessingResult, video_bytes: bytes | None) -> None:
     selected_index, selected_chunk = selected_chunk_for_time(result, selected_time)
     if selected_index is not None:
         st.session_state[SESSION_SELECTED_CHUNK_INDEX_KEY] = selected_index
-    left_column, right_column = st.columns([1.4, 1.0], gap="large")
-    with left_column:
-        render_result_media(result, video_bytes, selected_time)
-
-    with right_column:
-        render_result_selected_chunk(result, selected_index, selected_chunk)
-
+    render_result_media(result, video_bytes, selected_time)
     render_result_tabs(result)
 
 

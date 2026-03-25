@@ -11,3 +11,4 @@ wheels/
 /.direnv/
 /*~
 /st_who_speaks/.skylos_trace
+/.ooc
