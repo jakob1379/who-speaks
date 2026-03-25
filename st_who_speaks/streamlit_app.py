@@ -11,7 +11,11 @@ warnings.filterwarnings(
     category=FutureWarning,
 )
 
-from st_who_speaks.app import main
+
+def main() -> None:
+    from st_who_speaks.app import main as run_app
+
+    run_app()
 
 
 if __name__ == "__main__":
