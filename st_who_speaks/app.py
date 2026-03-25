@@ -109,15 +109,15 @@ def format_face_overlay_summary(
     detection_enabled: bool,
 ) -> str:
     parts = [
-        f"{chunk.speaker}",
+        f"transcript speaker {chunk.speaker}",
         f"{format_seconds(chunk.start)} → {format_seconds(chunk.end)}",
         format_face_count(
             detection.face_count if detection is not None else None,
             detection_enabled=detection_enabled,
         ),
     ]
-    if detection is not None and detection.speaker_label:
-        parts.append(f"speaker color {describe_color_hex(detection.color_hex)}")
+    if detection is not None and detection.color_hex:
+        parts.append(f"overlay color {describe_color_hex(detection.color_hex)}")
     if detection is not None and detection.landmarks:
         landmark_points = sum(len(points) for points in detection.landmarks)
         parts.append(
@@ -553,7 +553,7 @@ def build_selected_chunk_caption(
     preview_label = (
         "Landmark-aware face overlay"
         if preview.landmarks
-        else "Speaker-colored face overlay"
+        else "Face overlay"
         if preview.annotated_image is not None
         else "Frame preview"
     )
@@ -568,7 +568,6 @@ def render_timeline_controls(result: ProcessingResult, selected_time: int) -> No
         "Playback position",
         min_value=0,
         max_value=maximum,
-        value=selected_time,
         step=1,
         format="%d s",
         key=SESSION_SELECTED_TIME_SECONDS_KEY,
@@ -745,7 +744,7 @@ def render_frame_preview_row(
             st.image(
                 image_bytes,
                 width=STRETCH_WIDTH,
-                caption=f"{chunk.speaker} · {format_seconds(chunk.start)} · speaker color {describe_color_hex(detection.color_hex if detection is not None else None)} · {format_face_count(chunk.face_count, detection_enabled=face_detection_enabled(result))}",
+                caption=f"transcript speaker {chunk.speaker} · {format_seconds(chunk.start)} · overlay color {describe_color_hex(detection.color_hex if detection is not None else None)} · {format_face_count(chunk.face_count, detection_enabled=face_detection_enabled(result))}",
             )
 
 
@@ -763,7 +762,7 @@ def render_faces_tab(result: ProcessingResult) -> None:
 
     items = list(result.face_detections.items())
     st.caption(
-        f"Showing {len(items)} sampled frames with {result.metadata.get('total_faces_detected', 0)} total faces detected. Overlays use diarized speaker colors and facial landmarks when available."
+        f"Showing {len(items)} sampled frames with {result.metadata.get('total_faces_detected', 0)} total faces detected. Face overlays are visual-only and stay independent from transcript speaker labels."
     )
     for row_start in range(0, len(items), 3):
         render_face_detection_row(result, items[row_start : row_start + 3])
@@ -811,7 +810,6 @@ def render_debug_tab(result: ProcessingResult) -> None:
                 {
                     "frame_index": index,
                     "face_count": detection.face_count,
-                    "speaker_label": detection.speaker_label,
                     "color_hex": detection.color_hex,
                     "boxes": [asdict(box) for box in detection.boxes],
                     "landmarks": [

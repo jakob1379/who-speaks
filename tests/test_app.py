@@ -16,6 +16,7 @@ from st_who_speaks.app import (
     include_chunk,
     render_media_player,
     render_sidebar_model_section,
+    render_timeline_controls,
 )
 from st_who_speaks.models import (
     FaceDetectionFrame,
@@ -160,7 +161,6 @@ def test_speaker_color_legend_and_overlay_summary_are_explicit() -> None:
         face_count=2,
         boxes=[],
         landmarks=[[LandmarkPoint(1, 2), LandmarkPoint(3, 4)]],
-        speaker_label="Person A",
         color_hex="#ef4444",
     )
     chunk = TranscriptChunk(
@@ -176,7 +176,8 @@ def test_speaker_color_legend_and_overlay_summary_are_explicit() -> None:
     assert [entry.color_hex for entry in legend] == ["#ef4444", "#22c55e", "#3b82f6"]
     assert describe_color_hex("#ef4444") == "red (#ef4444)"
     summary = format_face_overlay_summary(chunk, detection, detection_enabled=True)
-    assert "speaker color red (#ef4444)" in summary
+    assert "transcript speaker Person A" in summary
+    assert "overlay color red (#ef4444)" in summary
     assert "landmarks 1 sets / 2 points" in summary
 
 
@@ -257,6 +258,33 @@ def test_build_timeline_chart_returns_altair_chart() -> None:
     chart = build_timeline_chart(result, selected_time=2.0)
 
     assert isinstance(chart, alt.LayerChart)
+
+
+def test_render_timeline_controls_uses_session_key_without_default(monkeypatch) -> None:
+    captured: dict[str, Any] = {}
+    result = ProcessingResult(
+        media_path="clip.webm",
+        audio_path="clip.wav",
+        duration=12.0,
+        speakers=["Person A"],
+        chunks=[],
+        speaker_turns=[],
+        metadata={},
+    )
+
+    monkeypatch.setattr(app_module.st, "altair_chart", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        app_module.st,
+        "slider",
+        lambda label, **kwargs: captured.update({"label": label, **kwargs}) or 3,
+    )
+    monkeypatch.setattr(app_module.st, "caption", lambda *_args, **_kwargs: None)
+
+    render_timeline_controls(result, selected_time=3)
+
+    assert captured["label"] == "Playback position"
+    assert captured["key"] == app_module.SESSION_SELECTED_TIME_SECONDS_KEY
+    assert "value" not in captured
 
 
 def test_build_webvtt_subtitles_prefixes_speaker_labels() -> None:

@@ -12,6 +12,8 @@ Streamlit app for local transcription, speaker diarization, thumbnails, and opti
 - OpenCV thumbnails
 - optional face detection and landmarks on sampled frames
 
+Face overlays are visual-only. They do not identify which diarized speaker is on screen.
+
 ## System dependencies
 
 - `uv`
