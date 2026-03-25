@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "st-who-speaks"
+version = "0.1.0"
+description = "Streamlit video transcription and speaker diarization prototype"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "altair>=5.5.0",
+    "ctranslate2>=4.7.1",
+    "faster-whisper>=1.1.1",
+    "numpy>=2.2.0",
+    "opencv-python-headless>=4.11.0.86",
+    "mediapipe>=0.10.21",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.8.0",
+    "speechbrain>=1.0.3",
+    "streamlit>=1.45.1",
+    "structlog>=25.4.0",
+    "torch>=2.6.0",
+]
+
+[project.scripts]
+who-speaks = "st_who_speaks.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "sample_smoke: sample media smoke test that may download model caches",
+]
+
+[tool.setuptools.packages.find]
+include = ["st_who_speaks*"]
