@@ -186,7 +186,7 @@ def _ensure_huggingface_hub_compatibility() -> None:
     _patch_huggingface_hub_download(huggingface_hub)
 
 
-def _resolve_execution_settings_compat(
+def resolve_execution_settings(
     use_hardware_acceleration: bool,
 ) -> dict[str, Any]:
     return _resolve_execution_settings(
@@ -430,7 +430,7 @@ def process_media(
     progress_callback: ProgressCallback | None = None,
 ) -> ProcessingResult:
     started_at = time.perf_counter()
-    execution = _resolve_execution_settings_compat(options.use_hardware_acceleration)
+    execution = resolve_execution_settings(options.use_hardware_acceleration)
 
     logger.info(
         "processing media",
@@ -581,6 +581,7 @@ def collect_frame_assets(
     bytes | None,
     int,
 ]:
+    chunks = context.chunks
     thumbnails: dict[int, bytes] = {}
     face_thumbnails: dict[int, bytes] = {}
     face_counts_by_chunk: dict[int, int] = {}
