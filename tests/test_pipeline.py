@@ -22,6 +22,7 @@ from st_who_speaks.pipeline import (
     detect_and_annotate_faces,
     media_has_audio_stream,
     load_speaker_embedding_model,
+    ProcessMediaOptions,
     process_media,
     summarize_ffmpeg_error,
 )
@@ -153,6 +154,10 @@ def test_process_media_with_local_diarization_and_face_data(
         lambda: object(),
     )
     monkeypatch.setattr(
+        "st_who_speaks.pipeline.is_opencv_available",
+        lambda: True,
+    )
+    monkeypatch.setattr(
         "st_who_speaks.pipeline.build_wireframe_video",
         lambda *_args, **_kwargs: (b"wireframe-video", 4),
     )
@@ -163,19 +168,21 @@ def test_process_media_with_local_diarization_and_face_data(
 
     result = process_media(
         str(media_path),
-        use_hardware_acceleration=True,
-        media_label="clip.webm",
-        whisper_model_size="tiny",
-        transcription_device="cuda",
-        transcription_compute_type="float16",
-        embedding_device="cuda",
-        hardware_acceleration_enabled=True,
-        min_speakers=1,
-        max_speakers=4,
-        generate_thumbnails=True,
-        enable_face_detection=True,
-        generate_wireframe_video=True,
-        max_thumbnails=6,
+        ProcessMediaOptions(
+            use_hardware_acceleration=True,
+            media_label="clip.webm",
+            whisper_model_size="tiny",
+            transcription_device="cuda",
+            transcription_compute_type="float16",
+            embedding_device="cuda",
+            hardware_acceleration_enabled=True,
+            min_speakers=1,
+            max_speakers=4,
+            generate_thumbnails=True,
+            enable_face_detection=True,
+            max_thumbnails=6,
+            generate_wireframe_video=True,
+        ),
         progress_callback=lambda label, progress: progress_events.append(
             (label, progress)
         ),
@@ -248,18 +255,20 @@ def test_process_media_local_diarization_failure_degrades_gracefully(
 
     result = process_media(
         str(media_path),
-        use_hardware_acceleration=False,
-        media_label="clip.webm",
-        whisper_model_size="tiny",
-        transcription_device="cpu",
-        transcription_compute_type="int8",
-        embedding_device="cpu",
-        hardware_acceleration_enabled=False,
-        min_speakers=1,
-        max_speakers=2,
-        generate_thumbnails=False,
-        enable_face_detection=False,
-        max_thumbnails=6,
+        ProcessMediaOptions(
+            use_hardware_acceleration=False,
+            media_label="clip.webm",
+            whisper_model_size="tiny",
+            transcription_device="cpu",
+            transcription_compute_type="int8",
+            embedding_device="cpu",
+            hardware_acceleration_enabled=False,
+            min_speakers=1,
+            max_speakers=2,
+            generate_thumbnails=False,
+            enable_face_detection=False,
+            max_thumbnails=6,
+        ),
     )
 
     assert result.speakers == ["Person A"]

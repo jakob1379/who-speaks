@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from st_who_speaks.pipeline import process_media
+from st_who_speaks.pipeline import ProcessMediaOptions, process_media
 
 
 @pytest.mark.sample_smoke
@@ -25,19 +25,21 @@ def test_sample_media_pipeline_smoke(sample_media_path: Path) -> None:
 
     result = process_media(
         str(sample_media_path),
-        use_hardware_acceleration=False,
-        media_label=sample_media_path.name,
-        whisper_model_size="tiny",
-        transcription_device="cpu",
-        transcription_compute_type="int8",
-        embedding_device="cpu",
-        hardware_acceleration_enabled=False,
-        min_speakers=1,
-        max_speakers=4,
-        generate_thumbnails=True,
-        enable_face_detection=True,
-        generate_wireframe_video=True,
-        max_thumbnails=4,
+        ProcessMediaOptions(
+            use_hardware_acceleration=False,
+            media_label=sample_media_path.name,
+            whisper_model_size="tiny",
+            transcription_device="cpu",
+            transcription_compute_type="int8",
+            embedding_device="cpu",
+            hardware_acceleration_enabled=False,
+            min_speakers=1,
+            max_speakers=4,
+            generate_thumbnails=True,
+            enable_face_detection=True,
+            max_thumbnails=4,
+            generate_wireframe_video=True,
+        ),
         progress_callback=lambda label, progress: progress_events.append(
             (label, progress)
         ),

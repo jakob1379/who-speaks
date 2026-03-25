@@ -14,12 +14,12 @@ Streamlit app for local transcription, speaker diarization, thumbnails, and opti
 
 ## System dependencies
 
-- `python312`
 - `uv`
 - `ffmpeg`
 - on Linux, OpenCV/MediaPipe runtime libs such as `glib`, `libGL`, `libice`, `libsm`, `libx11`, `libxext`, and `libxrender`
 
-`flake.nix` provides those. Python package dependencies come from `pyproject.toml` via `uv`.
+> [!NOTE]
+> `flake.nix` provides the required system libraries. Python package dependencies come from `pyproject.toml` via `uv`.
 
 ## Run
 
@@ -32,7 +32,6 @@ nix develop -c uv run who-speaks
 Without Nix, install the system dependencies above, then:
 
 ```bash
-uv sync --python 3.12
 uv run who-speaks
 ```
 
@@ -44,7 +43,8 @@ If no GPU is available, the app runs on CPU.
 uv run pytest tests/test_sample_smoke.py -m sample_smoke --run-sample-smoke
 ```
 
-Uses `samples/george-siemens-interview-90s.webm` by default and may download model weights on first run.
+> [!IMPORTANT]
+> The smoke test uses `samples/george-siemens-interview-90s.webm` by default and may download model weights on first run.
 
 ## Repo layout
 

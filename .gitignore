@@ -10,3 +10,4 @@ wheels/
 .venv
 /.direnv/
 /*~
+/st_who_speaks/.skylos_trace

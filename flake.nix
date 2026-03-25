@@ -36,7 +36,6 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             ffmpeg
-            python312
             uv
           ];
 

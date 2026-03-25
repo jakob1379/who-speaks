@@ -65,8 +65,9 @@ def test_run_pipeline_uses_face_detection_toggle_for_wireframe(monkeypatch) -> N
         def empty(self) -> None:
             return None
 
-    def fake_process_media(*_args, **kwargs):
-        captured.update(kwargs)
+    def fake_process_media(_media_path, options, _progress_callback):
+        captured["enable_face_detection"] = options.enable_face_detection
+        captured["generate_wireframe_video"] = options.generate_wireframe_video
         return ProcessingResult(
             media_path="clip.webm",
             audio_path=None,
@@ -80,7 +81,7 @@ def test_run_pipeline_uses_face_detection_toggle_for_wireframe(monkeypatch) -> N
     monkeypatch.setattr(
         app_module,
         "resolve_execution_settings",
-        lambda _enabled: {
+        lambda *, use_hardware_acceleration: {
             "hardware_acceleration_enabled": False,
             "transcription_device": "cpu",
             "transcription_compute_type": "int8",
@@ -286,8 +287,8 @@ def test_resolve_execution_settings_respects_available_hardware(monkeypatch) -> 
         ),
     )
 
-    enabled = resolve_execution_settings(True)
-    disabled = resolve_execution_settings(False)
+    enabled = resolve_execution_settings(use_hardware_acceleration=True)
+    disabled = resolve_execution_settings(use_hardware_acceleration=False)
 
     assert enabled["hardware_acceleration_enabled"] is True
     assert enabled["embedding_device"] == "cuda"

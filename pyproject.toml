@@ -30,6 +30,7 @@ who-speaks = "st_who_speaks.cli:main"
 dev = [
     "pytest>=9.0.2",
     "ruff>=0.15.7",
+    "skylos>=4.1.3",
 ]
 
 [tool.pytest.ini_options]
