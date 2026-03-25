@@ -260,6 +260,8 @@ SPEAKER_COLOR_PALETTE = [
     "#84cc16",
 ]
 
+FACE_OVERLAY_COLOR_HEX = "#ef4444"
+
 APPROXIMATE_LANDMARK_CONNECTIONS = [
     (0, 6),
     (6, 2),
@@ -604,14 +606,12 @@ def collect_frame_assets(
             max_thumbnails=context.options.max_thumbnails,
             generate_thumbnails=context.options.generate_thumbnails,
             enable_face_detection=context.options.enable_face_detection,
-            speaker_colors=context.speaker_colors,
         )
         if context.options.enable_face_detection:
             face_detections = {
                 index: replace(
                     face_detection,
-                    speaker_label=context.chunks[index].speaker,
-                    color_hex=context.speaker_colors.get(context.chunks[index].speaker),
+                    color_hex=face_detection.color_hex or FACE_OVERLAY_COLOR_HEX,
                 )
                 for index, face_detection in face_detections.items()
             }
@@ -627,8 +627,6 @@ def collect_frame_assets(
             wireframe_video_bytes, wireframe_faces_detected = build_wireframe_video(
                 frame_media_path,
                 original_media_path=context.media_path,
-                speaker_turns=context.speaker_turns,
-                speaker_colors=context.speaker_colors,
                 working_dir=context.working_path,
             )
 
@@ -1166,8 +1164,6 @@ def _render_wireframe_video_frames(
     process: Any,
     *,
     fps: float,
-    speaker_turns: list[SpeakerTurn],
-    speaker_colors: dict[str, str],
 ) -> int:
     frame_index = 0
     total_faces_detected = 0
@@ -1179,14 +1175,9 @@ def _render_wireframe_video_frames(
         success, frame = capture.read()
         if not success:
             break
-        timestamp = frame_index / fps
-        speaker_turn = pick_speaker_turn_at_time(speaker_turns, timestamp)
-        speaker_label = speaker_turn.label if speaker_turn is not None else None
-        color_hex = speaker_colors.get(speaker_label) if speaker_label else None
         face_detection, annotated = detect_and_annotate_faces_with_frame(
             frame,
-            speaker_label=speaker_label,
-            color_hex=color_hex,
+            color_hex=FACE_OVERLAY_COLOR_HEX,
         )
         total_faces_detected += face_detection.face_count
         if not _write_annotated_frame(stdin, annotated):
@@ -1239,8 +1230,6 @@ def _build_wireframe_video_from_capture(
     capture: Any,
     *,
     original_media_path: str,
-    speaker_turns: list[SpeakerTurn],
-    speaker_colors: dict[str, str],
     working_dir: Path,
 ) -> tuple[bytes | None, int]:
     width, height = _read_capture_dimensions(capture)
@@ -1270,8 +1259,6 @@ def _build_wireframe_video_from_capture(
                 capture,
                 process,
                 fps=fps,
-                speaker_turns=speaker_turns,
-                speaker_colors=speaker_colors,
             )
     stderr = _read_process_stderr(process.stderr)
     return_code = process.wait()
@@ -1288,8 +1275,6 @@ def build_wireframe_video(
     media_path: str,
     *,
     original_media_path: str,
-    speaker_turns: list[SpeakerTurn],
-    speaker_colors: dict[str, str],
     working_dir: Path,
 ) -> tuple[bytes | None, int]:
     if shutil.which("ffmpeg") is None or load_face_detector() is None:
@@ -1302,8 +1287,6 @@ def build_wireframe_video(
         return _build_wireframe_video_from_capture(
             capture,
             original_media_path=original_media_path,
-            speaker_turns=speaker_turns,
-            speaker_colors=speaker_colors,
             working_dir=working_dir,
         )
     finally:
@@ -1349,7 +1332,6 @@ def extract_thumbnails(
     max_thumbnails: int,
     generate_thumbnails: bool,
     enable_face_detection: bool,
-    speaker_colors: dict[str, str] | None = None,
 ) -> tuple[
     dict[int, bytes],
     dict[int, bytes],
@@ -1369,7 +1351,6 @@ def extract_thumbnails(
             max_thumbnails=max_thumbnails,
             generate_thumbnails=generate_thumbnails,
             enable_face_detection=enable_face_detection,
-            speaker_colors=speaker_colors,
         )
     finally:
         capture.release()
@@ -1509,7 +1490,6 @@ def _extract_thumbnails_from_capture(
     max_thumbnails: int,
     generate_thumbnails: bool,
     enable_face_detection: bool,
-    speaker_colors: dict[str, str] | None,
 ) -> tuple[
     dict[int, bytes],
     dict[int, bytes],
@@ -1531,12 +1511,9 @@ def _extract_thumbnails_from_capture(
             if thumbnail_bytes is not None:
                 thumbnails[index] = thumbnail_bytes
         if enable_face_detection:
-            speaker_label = chunks[index].speaker
-            color_hex = (speaker_colors or {}).get(speaker_label)
             face_detection = detect_and_annotate_faces(
                 frame,
-                speaker_label=speaker_label,
-                color_hex=color_hex,
+                color_hex=FACE_OVERLAY_COLOR_HEX,
             )
             face_counts_by_chunk[index] = face_detection.face_count
             face_detections[index] = face_detection
@@ -1549,12 +1526,10 @@ def _extract_thumbnails_from_capture(
 def detect_and_annotate_faces_with_frame(
     frame: np.ndarray,
     *,
-    speaker_label: str | None = None,
     color_hex: str | None = None,
 ) -> tuple[FaceDetectionFrame, np.ndarray]:
     return _detect_and_annotate_faces_with_frame(
         frame,
-        speaker_label=speaker_label,
         color_hex=color_hex,
     )
 
@@ -1562,16 +1537,14 @@ def detect_and_annotate_faces_with_frame(
 def _detect_and_annotate_faces_with_frame(
     frame: np.ndarray,
     *,
-    speaker_label: str | None = None,
     color_hex: str | None = None,
 ) -> tuple[FaceDetectionFrame, np.ndarray]:
     detector = load_face_detector()
-    resolved_color_hex = color_hex or "#ef4444"
+    resolved_color_hex = color_hex or FACE_OVERLAY_COLOR_HEX
     annotated = frame.copy()
     if detector is None:
         return _empty_face_detection_frame(
             annotated=annotated,
-            speaker_label=speaker_label,
             resolved_color_hex=resolved_color_hex,
         )
     boxes, landmarks = _annotate_detected_faces(
@@ -1586,7 +1559,6 @@ def _detect_and_annotate_faces_with_frame(
             boxes=boxes,
             landmarks=landmarks,
             annotated_image=None,
-            speaker_label=speaker_label,
             color_hex=resolved_color_hex,
         ),
         annotated,
@@ -1596,7 +1568,6 @@ def _detect_and_annotate_faces_with_frame(
 def _empty_face_detection_frame(
     *,
     annotated: np.ndarray,
-    speaker_label: str | None,
     resolved_color_hex: str,
 ) -> tuple[FaceDetectionFrame, np.ndarray]:
     return (
@@ -1605,7 +1576,6 @@ def _empty_face_detection_frame(
             boxes=[],
             landmarks=[],
             annotated_image=None,
-            speaker_label=speaker_label,
             color_hex=resolved_color_hex,
         ),
         annotated,
@@ -1650,12 +1620,10 @@ def _annotate_detected_faces(
 def detect_and_annotate_faces(
     frame: np.ndarray,
     *,
-    speaker_label: str | None = None,
     color_hex: str | None = None,
 ) -> FaceDetectionFrame:
     face_detection, annotated = detect_and_annotate_faces_with_frame(
         frame,
-        speaker_label=speaker_label,
         color_hex=color_hex,
     )
     encoded, buffer = cv2.imencode(".jpg", annotated)
@@ -1664,7 +1632,6 @@ def detect_and_annotate_faces(
         boxes=face_detection.boxes,
         landmarks=face_detection.landmarks,
         annotated_image=buffer.tobytes() if encoded else None,
-        speaker_label=face_detection.speaker_label,
         color_hex=face_detection.color_hex,
     )
 

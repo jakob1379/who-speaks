@@ -80,7 +80,6 @@ def test_detect_and_annotate_faces_returns_boxes_and_image(monkeypatch) -> None:
     frame = np.zeros((120, 160, 3), dtype=np.uint8)
     result = detect_and_annotate_faces(
         frame,
-        speaker_label="Person A",
         color_hex="#ef4444",
     )
 
@@ -89,7 +88,6 @@ def test_detect_and_annotate_faces_returns_boxes_and_image(monkeypatch) -> None:
         FaceBox(x=10, y=15, width=30, height=40),
         FaceBox(x=50, y=60, width=20, height=25),
     ]
-    assert result.speaker_label == "Person A"
     assert result.color_hex == "#ef4444"
     assert result.landmarks == [
         [LandmarkPoint(x=16, y=27), LandmarkPoint(x=34, y=43)],
@@ -206,7 +204,6 @@ def test_process_media_with_local_diarization_and_face_data(
     assert result.metadata["wireframe_video_available"] is True
     assert result.metadata["wireframe_faces_detected"] == 4
     assert result.face_detections[0].face_count == 2
-    assert result.face_detections[0].speaker_label == "Person A"
     assert result.face_detections[0].color_hex == "#ef4444"
     assert result.wireframe_video_bytes == b"wireframe-video"
     assert progress_events[-1] == ("Done", 1.0)

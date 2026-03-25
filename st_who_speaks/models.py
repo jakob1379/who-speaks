@@ -69,7 +69,6 @@ class FaceDetectionFrame:
     boxes: list[FaceBox] = field(default_factory=list)
     landmarks: list[list[LandmarkPoint]] = field(default_factory=list)
     annotated_image: bytes | None = None
-    speaker_label: str | None = None
     color_hex: str | None = None
 
 
