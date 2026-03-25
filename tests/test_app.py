@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import altair as alt
 from types import SimpleNamespace
+from typing import Any
 
 from st_who_speaks import app as app_module
 from st_who_speaks.app import (
@@ -14,6 +15,7 @@ from st_who_speaks.app import (
     format_seconds,
     include_chunk,
     render_media_player,
+    render_sidebar_model_section,
 )
 from st_who_speaks.models import (
     FaceDetectionFrame,
@@ -125,6 +127,25 @@ def test_format_seconds() -> None:
 def test_supported_upload_types_include_web_video_formats() -> None:
     assert "webm" in SUPPORTED_UPLOAD_TYPES
     assert "ogv" in SUPPORTED_UPLOAD_TYPES
+
+
+def test_render_sidebar_model_section_explains_whisper_sizes(monkeypatch) -> None:
+    captured: dict[str, Any] = {}
+
+    monkeypatch.setattr(app_module.st, "header", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        app_module.st,
+        "selectbox",
+        lambda label, **kwargs: captured.update({"label": label, **kwargs}),
+    )
+
+    render_sidebar_model_section()
+
+    assert captured["label"] == "Whisper model"
+    assert captured["options"] == ["tiny", "base", "small", "medium"]
+    assert "39M params" in captured["format_func"]("tiny")
+    assert "244M params" in captured["format_func"]("small")
+    assert "Larger Whisper models are slower" in captured["help"]
 
 
 def test_format_face_count() -> None:

@@ -45,6 +45,19 @@ SPEAKER_COLOR_NAMES = {
 
 SPEAKER_COLOR_PALETTE = list(SPEAKER_COLOR_NAMES.keys())
 
+WHISPER_MODEL_OPTIONS = ["tiny", "base", "small", "medium"]
+WHISPER_MODEL_METRICS = {
+    "tiny": "39M params · fastest · lowest accuracy",
+    "base": "74M params · fast · light upgrade",
+    "small": "244M params · balanced speed/accuracy",
+    "medium": "769M params · slowest · strongest accuracy",
+}
+WHISPER_MODEL_HELP = (
+    "Larger Whisper models are slower and use more memory, but usually improve "
+    "transcription accuracy. Tiny is quickest; medium is the most accurate of "
+    "these four."
+)
+
 SESSION_RESULT_KEY = "result"
 SESSION_VIDEO_BYTES_KEY = "video_bytes"
 SESSION_SELECTED_CHUNK_INDEX_KEY = "selected_chunk_index"
@@ -83,6 +96,10 @@ def describe_color_hex(color_hex: str | None) -> str:
 
 def face_detection_enabled(result: ProcessingResult) -> bool:
     return bool(result.metadata.get(FACE_DETECTION_ENABLED_KEY, False))
+
+
+def format_whisper_model_option(model_size: str) -> str:
+    return f"{model_size} — {WHISPER_MODEL_METRICS[model_size]}"
 
 
 def format_face_overlay_summary(
@@ -205,9 +222,11 @@ def render_sidebar_model_section() -> None:
     st.header("Models")
     st.selectbox(
         "Whisper model",
-        options=["tiny", "base", "small", "medium"],
+        options=WHISPER_MODEL_OPTIONS,
         index=2,
         key="whisper_model_size",
+        format_func=format_whisper_model_option,
+        help=WHISPER_MODEL_HELP,
     )
 
 
