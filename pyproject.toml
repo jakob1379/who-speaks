@@ -9,18 +9,18 @@ description = "Streamlit video transcription and speaker diarization prototype"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "altair>=6.0.0",
-    "ctranslate2>=4.7.1",
-    "faster-whisper>=1.2.1",
-    "numpy>=2.4.3",
-    "opencv-python-headless>=4.13.0.92",
-    "mediapipe>=0.10.33",
-    "pandas>=2.3.3",
-    "scikit-learn>=1.8.0",
-    "speechbrain>=1.0.3",
-    "streamlit>=1.55.0",
-    "structlog>=25.5.0",
-    "torch>=2.11.0",
+    "altair>=6.0.0,<7",
+    "ctranslate2>=4.7.1,<5",
+    "faster-whisper>=1.2.1,<2",
+    # MediaPipe owns the cv2 provider through opencv-contrib-python.
+    "mediapipe>=0.10.33,<0.11",
+    "numpy>=2.4.3,<3",
+    "pandas>=2.3.3,<3",
+    "scikit-learn>=1.8.0,<2",
+    "speechbrain>=1.0.3,<2",
+    "streamlit>=1.55.0,<2",
+    "structlog>=25.5.0,<26",
+    "torch>=2.11.0,<3",
 ]
 
 [project.scripts]
@@ -28,6 +28,7 @@ who-speaks = "st_who_speaks.cli:main"
 
 [dependency-groups]
 dev = [
+    "bandit>=1.9.2",
     "pytest>=9.0.2",
     "ruff>=0.15.7",
     "skylos>=4.1.3",

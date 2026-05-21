@@ -4,6 +4,7 @@ import logging
 import sys
 
 import structlog
+from structlog.typing import BindableLogger
 
 _CONFIGURED = False
 
@@ -29,6 +30,5 @@ def configure_logging() -> None:
     _CONFIGURED = True
 
 
-def get_logger(name: str):
-    configure_logging()
+def get_logger(name: str) -> BindableLogger:
     return structlog.get_logger(name)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
 
 @dataclass(slots=True)
@@ -78,9 +77,38 @@ class SpeakerColor:
     color_hex: str
 
 
+@dataclass(frozen=True, slots=True)
+class ProcessingMetadata:
+    processing_time_seconds: float = 0.0
+    diarization_warning: str | None = None
+    whisper_model: str | None = None
+    hardware_acceleration_enabled: bool = False
+    hardware_acceleration_summary: str | None = None
+    backend_label: str | None = None
+    transcription_device: str | None = None
+    transcription_compute_type: str | None = None
+    embedding_device: str | None = None
+    chunk_count: int = 0
+    speaker_count: int = 0
+    speaker_colors: dict[str, str] = field(default_factory=dict)
+    total_faces_detected: int = 0
+    face_counts_by_chunk: dict[int, int] = field(default_factory=dict)
+    face_detection_enabled: bool = False
+    opencv_available: bool = True
+    opencv_import_error: str | None = None
+    face_detector_available: bool = False
+    generate_thumbnails: bool = False
+    generate_wireframe_video: bool = False
+    wireframe_faces_detected: int = 0
+    wireframe_video_available: bool = False
+    diarization_mode: str = "local-clustering"
+    diagnostics: dict[str, str] = field(default_factory=dict)
+
+
 @dataclass(slots=True)
 class ProcessingResult:
-    media_path: str
+    display_name: str
+    media_identity: str
     audio_path: str | None
     duration: float
     speakers: list[str]
@@ -90,4 +118,4 @@ class ProcessingResult:
     face_thumbnails: dict[int, bytes] = field(default_factory=dict)
     face_detections: dict[int, FaceDetectionFrame] = field(default_factory=dict)
     wireframe_video_bytes: bytes | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: ProcessingMetadata = field(default_factory=ProcessingMetadata)

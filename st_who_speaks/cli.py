@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import os
 import sys
 from pathlib import Path
 from typing import Sequence
@@ -16,4 +16,4 @@ def main(argv: Sequence[str] | None = None) -> None:
     app_path = Path(__file__).resolve().with_name("streamlit_app.py")
     command = [sys.executable, "-m", "streamlit", "run", str(app_path), *args]
     logger.info("launching streamlit", command=command)
-    raise SystemExit(subprocess.run(command, check=False).returncode)
+    os.execv(sys.executable, command)
